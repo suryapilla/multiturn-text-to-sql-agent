@@ -1,0 +1,375 @@
+{
+  "data_designer": {
+    "columns": [
+      {
+        "name": "difficulty",
+        "drop": false,
+        "column_type": "sampler",
+        "skip": null,
+        "propagate_skip": true,
+        "sampler_type": "category",
+        "params": {
+          "values": [
+            "easy",
+            "medium",
+            "hard"
+          ],
+          "weights": [
+            0.3,
+            0.4,
+            0.3
+          ],
+          "sampler_type": "category"
+        },
+        "conditional_params": {},
+        "convert_to": null
+      },
+      {
+        "name": "query_type",
+        "drop": false,
+        "column_type": "sampler",
+        "skip": null,
+        "propagate_skip": true,
+        "sampler_type": "subcategory",
+        "params": {
+          "category": "difficulty",
+          "values": {
+            "easy": [
+              "single-table filter",
+              "sorting and limits",
+              "simple count"
+            ],
+            "medium": [
+              "two-table join",
+              "group by with aggregation",
+              "date filtering"
+            ],
+            "hard": [
+              "multi-join aggregation",
+              "subquery or CTE",
+              "window function ranking"
+            ]
+          },
+          "sampler_type": "subcategory"
+        },
+        "conditional_params": {},
+        "convert_to": null
+      },
+      {
+        "name": "user_role",
+        "drop": false,
+        "column_type": "sampler",
+        "skip": null,
+        "propagate_skip": true,
+        "sampler_type": "category",
+        "params": {
+          "values": [
+            "sales manager",
+            "finance analyst",
+            "marketing lead",
+            "customer support lead",
+            "music catalog curator"
+          ],
+          "weights": null,
+          "sampler_type": "category"
+        },
+        "conditional_params": {},
+        "convert_to": null
+      },
+      {
+        "name": "question",
+        "drop": false,
+        "column_type": "llm-text",
+        "skip": null,
+        "propagate_skip": true,
+        "prompt": "Database schema (SQLite, a digital music store):\n{{ schema }}\n\nWrite ONE question a {{ user_role }} would ask about this data. It should require a {{ difficulty }} query of type: {{ query_type }}. Use business language, not table or column names. Only ask about data that exists in the schema. Output only the question.",
+        "model_alias": "nvidia-text",
+        "system_prompt": "You write realistic business questions that analysts ask a SQL assistant.",
+        "multi_modal_context": null,
+        "tool_alias": null,
+        "with_trace": "none",
+        "extract_reasoning_content": false
+      },
+      {
+        "name": "sql",
+        "drop": false,
+        "column_type": "llm-code",
+        "skip": null,
+        "propagate_skip": true,
+        "prompt": "Schema:\n{{ schema }}\n\nQuestion: {{ question }}\n\nWrite a single SQLite SELECT query that answers the question. Use only tables and columns in the schema. No comments.",
+        "model_alias": "nvidia-text",
+        "system_prompt": "You are an expert SQLite engineer. Write read-only SELECT queries only.",
+        "multi_modal_context": null,
+        "tool_alias": null,
+        "with_trace": "none",
+        "extract_reasoning_content": false,
+        "code_lang": "sql:sqlite"
+      },
+      {
+        "name": "execution_check",
+        "drop": false,
+        "column_type": "validation",
+        "skip": null,
+        "propagate_skip": true,
+        "target_columns": [
+          "sql"
+        ],
+        "validator_type": "local_callable",
+        "validator_params": {
+          "validator_type": "local_callable",
+          "validation_function": "execute_sql",
+          "output_schema": null
+        },
+        "batch_size": 20
+      },
+      {
+        "name": "judge",
+        "drop": false,
+        "column_type": "llm-judge",
+        "skip": null,
+        "propagate_skip": true,
+        "prompt": "Schema:\n{{ schema }}\n\nQuestion: {{ question }}\n\nSQL:\n{{ sql }}\n\nScore how well the SQL answers the question.",
+        "model_alias": "nvidia-text",
+        "system_prompt": null,
+        "multi_modal_context": null,
+        "tool_alias": null,
+        "with_trace": "none",
+        "extract_reasoning_content": false,
+        "scores": [
+          {
+            "name": "correctness",
+            "description": "Does the SQL return exactly what the question asks?",
+            "options": {
+              "4": "Fully correct",
+              "3": "Minor issue",
+              "2": "Partially correct",
+              "1": "Mostly wrong",
+              "0": "Wrong or unrelated"
+            }
+          },
+          {
+            "name": "question_realism",
+            "description": "Is this a natural question a business user would ask?",
+            "options": {
+              "4": "Very natural",
+              "3": "Natural",
+              "2": "Somewhat artificial",
+              "1": "Artificial",
+              "0": "Nonsensical"
+            }
+          }
+        ]
+      },
+      {
+        "name": "schema",
+        "drop": false,
+        "column_type": "seed-dataset",
+        "skip": null,
+        "propagate_skip": true
+      }
+    ],
+    "model_configs": [
+      {
+        "alias": "nvidia-text",
+        "model": "nvidia/nemotron-3.5-lightning-30b-a3b",
+        "inference_parameters": {
+          "generation_type": "chat-completion",
+          "max_parallel_requests": 4,
+          "timeout": null,
+          "extra_body": {
+            "chat_template_kwargs": {
+              "enable_thinking": false
+            }
+          },
+          "temperature": 1.0,
+          "top_p": 0.95,
+          "max_tokens": null
+        },
+        "provider": "nvidia",
+        "skip_health_check": false
+      },
+      {
+        "alias": "nvidia-reasoning",
+        "model": "nvidia/nemotron-3-super-120b-a12b",
+        "inference_parameters": {
+          "generation_type": "chat-completion",
+          "max_parallel_requests": 4,
+          "timeout": null,
+          "extra_body": {
+            "reasoning_effort": "medium"
+          },
+          "temperature": 1.0,
+          "top_p": 0.95,
+          "max_tokens": null
+        },
+        "provider": "nvidia",
+        "skip_health_check": false
+      },
+      {
+        "alias": "nvidia-vision",
+        "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning",
+        "inference_parameters": {
+          "generation_type": "chat-completion",
+          "max_parallel_requests": 4,
+          "timeout": null,
+          "extra_body": null,
+          "temperature": 0.6,
+          "top_p": 0.95,
+          "max_tokens": null
+        },
+        "provider": "nvidia",
+        "skip_health_check": false
+      },
+      {
+        "alias": "nvidia-embedding",
+        "model": "nvidia/nemotron-3-embed-1b",
+        "inference_parameters": {
+          "generation_type": "embedding",
+          "max_parallel_requests": 4,
+          "timeout": null,
+          "extra_body": {
+            "input_type": "query"
+          },
+          "encoding_format": "float",
+          "dimensions": null
+        },
+        "provider": "nvidia",
+        "skip_health_check": false
+      },
+      {
+        "alias": "openai-text",
+        "model": "gpt-4.1",
+        "inference_parameters": {
+          "generation_type": "chat-completion",
+          "max_parallel_requests": 4,
+          "timeout": null,
+          "extra_body": null,
+          "temperature": 0.85,
+          "top_p": 0.95,
+          "max_tokens": null
+        },
+        "provider": "openai",
+        "skip_health_check": false
+      },
+      {
+        "alias": "openai-reasoning",
+        "model": "gpt-5",
+        "inference_parameters": {
+          "generation_type": "chat-completion",
+          "max_parallel_requests": 4,
+          "timeout": null,
+          "extra_body": {
+            "reasoning_effort": "medium"
+          },
+          "temperature": null,
+          "top_p": null,
+          "max_tokens": null
+        },
+        "provider": "openai",
+        "skip_health_check": false
+      },
+      {
+        "alias": "openai-vision",
+        "model": "gpt-5",
+        "inference_parameters": {
+          "generation_type": "chat-completion",
+          "max_parallel_requests": 4,
+          "timeout": null,
+          "extra_body": {
+            "reasoning_effort": "medium"
+          },
+          "temperature": null,
+          "top_p": null,
+          "max_tokens": null
+        },
+        "provider": "openai",
+        "skip_health_check": false
+      },
+      {
+        "alias": "openai-embedding",
+        "model": "text-embedding-3-large",
+        "inference_parameters": {
+          "generation_type": "embedding",
+          "max_parallel_requests": 4,
+          "timeout": null,
+          "extra_body": null,
+          "encoding_format": "float",
+          "dimensions": null
+        },
+        "provider": "openai",
+        "skip_health_check": false
+      },
+      {
+        "alias": "openrouter-text",
+        "model": "nvidia/nemotron-3-nano-30b-a3b",
+        "inference_parameters": {
+          "generation_type": "chat-completion",
+          "max_parallel_requests": 4,
+          "timeout": null,
+          "extra_body": null,
+          "temperature": 1.0,
+          "top_p": 1.0,
+          "max_tokens": null
+        },
+        "provider": "openrouter",
+        "skip_health_check": false
+      },
+      {
+        "alias": "openrouter-reasoning",
+        "model": "openai/gpt-oss-20b",
+        "inference_parameters": {
+          "generation_type": "chat-completion",
+          "max_parallel_requests": 4,
+          "timeout": null,
+          "extra_body": null,
+          "temperature": 0.35,
+          "top_p": 0.95,
+          "max_tokens": null
+        },
+        "provider": "openrouter",
+        "skip_health_check": false
+      },
+      {
+        "alias": "openrouter-vision",
+        "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "inference_parameters": {
+          "generation_type": "chat-completion",
+          "max_parallel_requests": 4,
+          "timeout": null,
+          "extra_body": null,
+          "temperature": 0.6,
+          "top_p": 0.95,
+          "max_tokens": null
+        },
+        "provider": "openrouter",
+        "skip_health_check": false
+      },
+      {
+        "alias": "openrouter-embedding",
+        "model": "openai/text-embedding-3-large",
+        "inference_parameters": {
+          "generation_type": "embedding",
+          "max_parallel_requests": 4,
+          "timeout": null,
+          "extra_body": null,
+          "encoding_format": "float",
+          "dimensions": null
+        },
+        "provider": "openrouter",
+        "skip_health_check": false
+      }
+    ],
+    "tool_configs": [],
+    "seed_config": {
+      "source": {
+        "seed_type": "df"
+      },
+      "sampling_strategy": "ordered",
+      "selection_strategy": null
+    },
+    "constraints": null,
+    "profilers": null,
+    "processors": null
+  },
+  "library_version": "0.9.5"
+}

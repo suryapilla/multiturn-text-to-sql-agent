@@ -1,0 +1,181 @@
+{
+  "actual_num_records": 200,
+  "buffer_size": 1000,
+  "column_statistics": [
+    {
+      "column_name": "difficulty",
+      "column_type": "sampler",
+      "distribution": {
+        "histogram": {
+          "categories": [
+            "medium",
+            "easy",
+            "hard"
+          ],
+          "counts": [
+            79,
+            64,
+            57
+          ]
+        },
+        "least_common_value": "hard",
+        "most_common_value": "medium"
+      },
+      "distribution_type": "categorical",
+      "num_null": 0,
+      "num_records": 200,
+      "num_unique": 3,
+      "pyarrow_dtype": "large_string",
+      "sampler_type": "category",
+      "simple_dtype": "string"
+    },
+    {
+      "column_name": "query_type",
+      "column_type": "sampler",
+      "distribution": {
+        "histogram": {
+          "categories": [
+            "two-table join",
+            "date filtering",
+            "window function ranking",
+            "sorting and limits",
+            "single-table filter",
+            "group by with aggregation",
+            "simple count",
+            "subquery or CTE",
+            "multi-join aggregation"
+          ],
+          "counts": [
+            30,
+            28,
+            24,
+            24,
+            23,
+            21,
+            17,
+            17,
+            16
+          ]
+        },
+        "least_common_value": "multi-join aggregation",
+        "most_common_value": "two-table join"
+      },
+      "distribution_type": "categorical",
+      "num_null": 0,
+      "num_records": 200,
+      "num_unique": 9,
+      "pyarrow_dtype": "large_string",
+      "sampler_type": "subcategory",
+      "simple_dtype": "string"
+    },
+    {
+      "column_name": "user_role",
+      "column_type": "sampler",
+      "distribution": {
+        "histogram": {
+          "categories": [
+            "music catalog curator",
+            "sales manager",
+            "finance analyst",
+            "customer support lead",
+            "marketing lead"
+          ],
+          "counts": [
+            49,
+            43,
+            42,
+            34,
+            32
+          ]
+        },
+        "least_common_value": "marketing lead",
+        "most_common_value": "music catalog curator"
+      },
+      "distribution_type": "categorical",
+      "num_null": 0,
+      "num_records": 200,
+      "num_unique": 5,
+      "pyarrow_dtype": "large_string",
+      "sampler_type": "category",
+      "simple_dtype": "string"
+    },
+    {
+      "column_name": "question",
+      "column_type": "llm-text",
+      "input_tokens_mean": 1237.55,
+      "input_tokens_median": 1237.0,
+      "input_tokens_stddev": 0.97,
+      "num_null": 0,
+      "num_records": 200,
+      "num_unique": 199,
+      "output_tokens_mean": 23.22,
+      "output_tokens_median": 21.0,
+      "output_tokens_stddev": 9.88,
+      "pyarrow_dtype": "large_string",
+      "simple_dtype": "string"
+    },
+    {
+      "column_name": "sql",
+      "column_type": "llm-code",
+      "input_tokens_mean": 1276.21,
+      "input_tokens_median": 1274.0,
+      "input_tokens_stddev": 9.86,
+      "num_null": 0,
+      "num_records": 200,
+      "num_unique": 198,
+      "output_tokens_mean": 82.22,
+      "output_tokens_median": 69.5,
+      "output_tokens_stddev": 57.95,
+      "pyarrow_dtype": "large_string",
+      "simple_dtype": "string"
+    },
+    {
+      "column_name": "execution_check",
+      "column_type": "validation",
+      "num_null": 0,
+      "num_records": 200,
+      "num_unique": 52,
+      "num_valid_records": 115,
+      "pyarrow_dtype": "struct<is_valid: bool, error_message: string, row_count: int64>",
+      "simple_dtype": "dict"
+    },
+    {
+      "column_name": "judge",
+      "column_type": "llm-judge",
+      "input_tokens_mean": 1781.49,
+      "input_tokens_median": 1772.5,
+      "input_tokens_stddev": 63.31,
+      "num_null": 0,
+      "num_records": 200,
+      "num_unique": 200,
+      "output_tokens_mean": 167.56,
+      "output_tokens_median": 154.5,
+      "output_tokens_stddev": 55.89,
+      "pyarrow_dtype": "struct<correctness: struct<reasoning: string, score: int64>, question_realism: struct<reasoning: string, score: int64>>",
+      "simple_dtype": "dict"
+    },
+    {
+      "column_name": "schema",
+      "column_type": "seed-dataset",
+      "num_null": 0,
+      "num_records": 200,
+      "num_unique": 1,
+      "pyarrow_dtype": "large_string",
+      "simple_dtype": "string"
+    }
+  ],
+  "config_hash": "sha256:293484cdbf4c15ffaf4504fd2fb40372648991a35a7b0f68a0232eaa49a873e7",
+  "config_hash_algo": "sha256",
+  "config_hash_version": 2,
+  "dataset_name": "dataset",
+  "file_paths": {
+    "parquet-files": [
+      "parquet-files/batch_00000.parquet"
+    ]
+  },
+  "num_completed_batches": 1,
+  "original_target_num_records": 200,
+  "preserve_dropped_columns": true,
+  "target_num_records": 200,
+  "total_num_batches": 1
+}
